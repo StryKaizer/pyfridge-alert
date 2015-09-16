@@ -39,6 +39,10 @@ while True:
 
     print temp
 
+    if temp < -100:
+        # Bad reading, lets skip this result.
+        continue
+
     if(temp >= threshold):
         if not threshold_reached:
             # Just reached the threshold, fire push alert
@@ -62,8 +66,14 @@ while True:
                 print "Sending push: " + message
                 instapush.send_push(app_id, app_secret, event_id, message)
     else:
-        # Threshold not reached (anymore).
-        threshold_reached = False
+        if threshold_reached:
+            # Threshold not reached (anymore).
+            threshold_reached = False
+            # Lets notify we're back on track.
+            message = "Diepvries terug in orde: %s graden." % str(temp)
+            print "Sending push: " + message
+            instapush.send_push(app_id, app_secret, event_id, message)
+
     time.sleep(2)
 
 

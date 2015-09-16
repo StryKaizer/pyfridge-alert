@@ -81,8 +81,7 @@ while True:
         f = open('log.txt', 'a')
         now = datetime.datetime.now()
         timestamp = now.strftime("%Y/%m/%d %H:%M")
-        outvalue = 30.0
-        outstring = str(timestamp) + "  " + str(outvalue) + " C " + str(outvalue * 1.8 + 32) + " F" + "\n"
+        outstring = str(timestamp) + "  " + str(temp) + " C " + str(temp * 1.8 + 32) + " F" + "\n"
         f.write(outstring)
         f.close()
         write_log_counter = write_log_every_x_measurements

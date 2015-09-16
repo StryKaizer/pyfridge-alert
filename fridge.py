@@ -1,6 +1,7 @@
 from ConfigParser import SafeConfigParser
 import os
 import time
+import datetime
 from nanpy import (ArduinoApi, SerialManager, DallasTemperature)
 from alarms import sound, instapush
 
@@ -16,6 +17,7 @@ app_secret = settings.get('Instapush', 'INSTAPUSH_APP_SECRET')
 event_id = settings.get('Instapush', 'INSTAPUSH_EVENT_NAME')
 threshold = settings.getfloat('Fridge', 'THRESHOLD')
 notify_every_x_seconds = settings.getfloat('Fridge', 'NOTIFY_EVERY_X_SECONDS')
+write_log_every_x_measurements = 50
 
 # Startup arduino connection
 connection = SerialManager(device=device)
@@ -29,13 +31,14 @@ temperature_sensors.setResolution(12)
 arduino.pinMode(pin_sound, arduino.OUTPUT)
 arduino.digitalWrite(pin_sound, 0)
 
-#Initial values
+# Initial values
 last_alert = time.time()
 threshold_reached = False
+write_log_counter = 0
 
 while True:
     temperature_sensors.requestTemperatures()
-    temp = temperature_sensors.getTempC(0) # Fetches the temperature on the first DS18B20 found on the pin.
+    temp = temperature_sensors.getTempC(0)  # Fetches the temperature on the first DS18B20 found on the pin.
 
     print temp
 
@@ -43,7 +46,7 @@ while True:
         # Bad reading, lets skip this result.
         continue
 
-    if(temp >= threshold):
+    if (temp >= threshold):
         if not threshold_reached:
             # Just reached the threshold, fire push alert
             threshold_reached = True
@@ -74,8 +77,15 @@ while True:
             print "Sending push: " + message
             instapush.send_push(app_id, app_secret, event_id, message)
 
+    if write_log_counter == 0:
+        f = open('log.txt', 'a')
+        now = datetime.datetime.now()
+        timestamp = now.strftime("%Y/%m/%d %H:%M")
+        outvalue = 30.0
+        outstring = str(timestamp) + "  " + str(outvalue) + " C " + str(outvalue * 1.8 + 32) + " F" + "\n"
+        f.write(outstring)
+        f.close()
+        write_log_counter = write_log_every_x_measurements
+
+    write_log_counter -= 1
     time.sleep(2)
-
-
-
-

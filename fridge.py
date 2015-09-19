@@ -42,7 +42,7 @@ while True:
 
     print temp
 
-    if temp < -100:
+    if temp < -100 or temp == 0:
         # Bad reading, lets skip this result.
         continue
 
